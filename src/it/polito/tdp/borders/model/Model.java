@@ -2,9 +2,9 @@ package it.polito.tdp.borders.model;
 
 import java.util.*;
 
-import org.jgrapht.Graphs;
 import org.jgrapht.alg.ConnectivityInspector;
 import org.jgrapht.graph.*;
+import org.jgrapht.traverse.BreadthFirstIterator;
 
 import it.polito.tdp.borders.db.BordersDAO;
 
@@ -18,7 +18,7 @@ public class Model {
 	public Model() {
 		this.dao = new BordersDAO();
 		this.cmap = new HashMap<Integer, Country>();
-		this.clist = this.dao.loadAllCountries(cmap);
+		this.dao.loadAllCountries(cmap);
 	}
 
 	public void creaGrafo(Integer anno) {
@@ -30,6 +30,7 @@ public class Model {
 			this.grafo.addVertex(b.getC2());
 			this.grafo.addEdge(b.getC1(), b.getC2());
 		}
+		this.clist = new ArrayList<Country>(this.grafo.vertexSet());
 		
 		System.out.println("Grafo creato!");
 		System.out.println("# vertici: " +this.grafo.vertexSet().size());
@@ -50,6 +51,20 @@ public class Model {
 		for (Country c : grafo.vertexSet())
 			stats.put(c, grafo.degreeOf(c));
 		return stats;
+	}
+	
+	public List<Country> getCountries(){
+		return this.clist;
+	}
+
+	public List<Country> trovaTuttiVicini(Country country) {
+		BreadthFirstIterator<Country, DefaultEdge> bfi = new BreadthFirstIterator<Country, DefaultEdge>(this.grafo, country);
+		List<Country> vicini = new ArrayList<Country>();
+		bfi.next();
+		while(bfi.hasNext())
+			vicini.add(bfi.next());
+		System.out.println("Countries raggiungibili: " +vicini.size());
+		return vicini;
 	}
 
 }
